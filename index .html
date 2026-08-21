@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Recipe Index — Meal Search</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FAF6ED;
+    --ivory-2:#F1EADA;
+    --ink:#2A211A;
+    --ink-soft:#5C5045;
+    --plum:#6B2D3C;
+    --plum-dark:#4E202B;
+    --mustard:#D9A441;
+    --sage:#7C8B6F;
+    --line:#E1D7C2;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  html,body{
+    background:var(--ivory);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+
+  /* HEADER */
+  header{
+    border-bottom:2px solid var(--ink);
+    background:var(--ivory);
+    position:sticky; top:0; z-index:10;
+  }
+  .header-inner{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding:20px 24px; max-width:1080px; margin:0 auto;
+    flex-wrap:wrap; gap:8px;
+  }
+  .wordmark{
+    font-family:'Fraunces',serif; font-weight:700; font-size:1.7rem;
+    letter-spacing:-0.01em;
+  }
+  .wordmark span{color:var(--plum);}
+  .tagline{
+    font-size:0.8rem; color:var(--ink-soft); font-style:italic;
+    font-family:'Fraunces',serif;
+  }
+
+  /* HERO / SEARCH */
+  .hero{
+    padding:56px 24px 40px;
+    border-bottom:1px solid var(--line);
+  }
+  .hero-inner{max-width:1080px;margin:0 auto;}
+  .hero h1{
+    font-family:'Fraunces',serif; font-weight:600; font-size:clamp(2rem,4vw,3.1rem);
+    line-height:1.05; margin:0 0 10px; max-width:640px;
+  }
+  .hero p{
+    color:var(--ink-soft); max-width:520px; margin:0 0 28px; font-size:1.02rem;
+  }
+  .search-row{
+    display:flex; gap:10px; max-width:560px; flex-wrap:wrap;
+  }
+  #search-input{
+    flex:1; min-width:220px;
+    padding:14px 16px; font-size:1rem; font-family:'Inter',sans-serif;
+    border:2px solid var(--ink); border-radius:10px;
+    background:#fff; color:var(--ink);
+  }
+  #search-input:focus{outline:3px solid var(--mustard); outline-offset:1px;}
+  #search-btn{
+    padding:14px 26px; font-size:1rem; font-weight:600;
+    background:var(--plum); color:var(--ivory); border:2px solid var(--plum);
+    border-radius:10px; cursor:pointer; font-family:'Inter',sans-serif;
+    transition:background .15s ease;
+  }
+  #search-btn:hover{background:var(--plum-dark);}
+  #search-btn:focus-visible, #search-input:focus-visible{outline:3px solid var(--mustard); outline-offset:2px;}
+
+  /* STATUS MESSAGES */
+  .status{
+    max-width:1080px; margin:0 auto; padding:20px 24px 0; color:var(--ink-soft);
+    font-style:italic; font-family:'Fraunces',serif;
+  }
+
+  /* RESULTS */
+  main{padding:36px 24px 80px;}
+  .results-inner{max-width:1080px;margin:0 auto;}
+  .results-count{
+    font-family:'JetBrains Mono',monospace; font-size:0.78rem; letter-spacing:0.04em;
+    color:var(--ink-soft); text-transform:uppercase; margin-bottom:18px;
+  }
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:22px;
+  }
+  .card{
+    background:#fff; border:1.5px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; display:flex; flex-direction:column;
+    box-shadow:0 1px 2px rgba(42,33,26,0.04);
+    position:relative;
+  }
+  .card-img-wrap{
+    position:relative; aspect-ratio:4/3; overflow:hidden; background:var(--ivory-2);
+  }
+  .card-img-wrap img{width:100%; height:100%; object-fit:cover; display:block;}
+  .stamp{
+    position:absolute; top:10px; right:10px;
+    background:var(--ink); color:var(--ivory);
+    font-family:'JetBrains Mono',monospace; font-size:0.68rem;
+    padding:4px 8px; border-radius:6px; letter-spacing:0.03em;
+  }
+  .card-body{padding:18px 18px 20px; display:flex; flex-direction:column; gap:10px; flex:1;}
+  .card-title{
+    font-family:'Fraunces',serif; font-weight:600; font-size:1.2rem; line-height:1.15; margin:0;
+  }
+  .card-instructions{
+    font-size:0.88rem; color:var(--ink-soft); line-height:1.5;
+    display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+    flex:1;
+  }
+  .card-instructions.expanded{-webkit-line-clamp:unset;}
+  .toggle-instructions{
+    align-self:flex-start; background:none; border:none; color:var(--plum);
+    font-weight:600; font-size:0.82rem; cursor:pointer; padding:0; font-family:'Inter',sans-serif;
+  }
+  .toggle-instructions:hover{text-decoration:underline;}
+
+  /* SHOW ALL BUTTON */
+  .show-all-row{display:flex; justify-content:center; margin-top:34px;}
+  #show-all-btn{
+    padding:13px 30px; font-size:0.95rem; font-weight:600;
+    background:transparent; color:var(--ink); border:2px solid var(--ink);
+    border-radius:10px; cursor:pointer; font-family:'Inter',sans-serif;
+    transition:all .15s ease;
+  }
+  #show-all-btn:hover{background:var(--ink); color:var(--ivory);}
+
+  .empty-state{
+    text-align:center; padding:60px 20px; color:var(--ink-soft);
+    font-family:'Fraunces',serif; font-style:italic; font-size:1.1rem;
+  }
+
+  /* FOOTER */
+  footer{
+    border-top:2px solid var(--ink); background:var(--ink); color:var(--ivory-2);
+    padding:30px 24px;
+  }
+  .footer-inner{
+    max-width:1080px; margin:0 auto; display:flex; justify-content:space-between;
+    flex-wrap:wrap; gap:10px; font-size:0.85rem;
+  }
+  .footer-inner .fmark{font-family:'Fraunces',serif; font-style:italic; color:var(--mustard);}
+
+  @media (max-width:600px){
+    .header-inner{flex-direction:column; align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="wordmark">The Recipe<span>Index</span></div>
+    <div class="tagline">a searchable catalog of dishes, drawn from TheMealDB</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Find any dish, and the exact steps to make it.</h1>
+    <p>Type a meal name below — a dish, a dessert, a style of cooking — and pull up its recipe card: ingredients photo, title, and full instructions.</p>
+    <div class="search-row">
+      <input type="text" id="search-input" placeholder="e.g. chicken, pasta, cake…" autocomplete="off">
+      <button id="search-btn">Search</button>
+    </div>
+  </div>
+</section>
+
+<p class="status" id="status-msg"></p>
+
+<main>
+  <div class="results-inner">
+    <div class="results-count" id="results-count"></div>
+    <div class="grid" id="results-grid"></div>
+    <div class="show-all-row" id="show-all-row" style="display:none;">
+      <button id="show-all-btn">Show all results</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>The Recipe Index — a student project</span>
+    <span class="fmark">powered by TheMealDB API</span>
+  </div>
+</footer>
+
+<script>
+  const searchInput = document.getElementById('search-input');
+  const searchBtn = document.getElementById('search-btn');
+  const statusMsg = document.getElementById('status-msg');
+  const resultsGrid = document.getElementById('results-grid');
+  const resultsCount = document.getElementById('results-count');
+  const showAllRow = document.getElementById('show-all-row');
+  const showAllBtn = document.getElementById('show-all-btn');
+
+  let allMeals = [];
+  const PREVIEW_LIMIT = 5;
+
+  function clearResults(){
+    resultsGrid.innerHTML = '';
+    resultsCount.textContent = '';
+    showAllRow.style.display = 'none';
+    allMeals = [];
+  }
+
+  function renderMeals(meals){
+    resultsGrid.innerHTML = '';
+    meals.forEach(meal => {
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="card-img-wrap">
+          <img src="${meal.strMealThumb}" alt="${meal.strMeal}" loading="lazy">
+          <span class="stamp">ID ${meal.idMeal}</span>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">${meal.strMeal}</h3>
+          <p class="card-instructions">${meal.strInstructions || 'No instructions available.'}</p>
+          <button class="toggle-instructions">Read full instructions</button>
+        </div>
+      `;
+      const instrEl = card.querySelector('.card-instructions');
+      const toggleBtn = card.querySelector('.toggle-instructions');
+      toggleBtn.addEventListener('click', () => {
+        instrEl.classList.toggle('expanded');
+        toggleBtn.textContent = instrEl.classList.contains('expanded')
+          ? 'Show less'
+          : 'Read full instructions';
+      });
+      resultsGrid.appendChild(card);
+    });
+  }
+
+  function showPreviewOrAll(showAll){
+    if(showAll){
+      renderMeals(allMeals);
+      resultsCount.textContent = `Showing all ${allMeals.length} results`;
+      showAllRow.style.display = 'none';
+    } else {
+      const preview = allMeals.slice(0, PREVIEW_LIMIT);
+      renderMeals(preview);
+      resultsCount.textContent = allMeals.length > PREVIEW_LIMIT
+        ? `Showing ${PREVIEW_LIMIT} of ${allMeals.length} results`
+        : `Showing ${allMeals.length} result${allMeals.length === 1 ? '' : 's'}`;
+      showAllRow.style.display = allMeals.length > PREVIEW_LIMIT ? 'flex' : 'none';
+    }
+  }
+
+  async function searchMeals(){
+    const term = searchInput.value.trim();
+    clearResults();
+    statusMsg.textContent = '';
+
+    if(!term){
+      statusMsg.textContent = 'Type a meal name to search.';
+      return;
+    }
+
+    statusMsg.textContent = `Searching for "${term}"…`;
+    window.scrollTo({top:0, behavior:'smooth'});
+
+    try{
+      const res = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(term)}`);
+      if(!res.ok) throw new Error('Network response was not ok');
+      const data = await res.json();
+
+      if(!data.meals){
+        statusMsg.textContent = `No meals found for "${term}". Try another search.`;
+        resultsGrid.innerHTML = `<div class="empty-state">Nothing matched "${term}" — try a different dish or ingredient.</div>`;
+        return;
+      }
+
+      statusMsg.textContent = '';
+      allMeals = data.meals;
+      showPreviewOrAll(false);
+
+    } catch(err){
+      statusMsg.textContent = 'Something went wrong reaching TheMealDB. Please try again.';
+      console.error(err);
+    }
+  }
+
+  searchBtn.addEventListener('click', searchMeals);
+  searchInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') searchMeals();
+  });
+  showAllBtn.addEventListener('click', () => showPreviewOrAll(true));
+</script>
+
+</body>
+</html>
